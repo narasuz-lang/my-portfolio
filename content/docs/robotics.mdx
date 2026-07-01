@@ -1,0 +1,66 @@
+---
+title: Class 7 Robotics
+---
+
+## Smart Bin Project
+This project builds an automated waste management system using an ultrasonic sensor and a servo motor. The system detects proximity and triggers the lid to open automatically.
+
+### Circuit Overview
+The system relies on the HC-SR04 sensor to measure distance and an Arduino to process the logic and control the motor.
+
+
+
+### Source Code
+```cpp
+/*
+ * Smart Dustbin - Automated Control
+ * Modified: July 1, 2026
+ */
+
+#include <Servo.h>
+
+Servo servo;
+const int trigPin = 5;
+const int echoPin = 6;
+const int servoPin = 9;
+
+long duration, distance;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  
+  // Start with lid closed
+  servo.attach(servoPin);
+  servo.write(180); 
+  delay(1000);
+  servo.detach();
+}
+
+void measureDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration / 2) / 29.1; // Convert to cm
+}
+
+void loop() {
+  measureDistance();
+  
+  // If object is within 20cm
+  if (distance > 0 && distance <= 20) {
+    servo.attach(servoPin);
+    servo.write(0);      // Open lid
+    delay(3500);         // Wait 3.5 seconds
+    servo.write(180);    // Close lid
+    delay(1000);         // Allow time for lid to close
+    servo.detach();      // Detach to stop jitter/save power
+  }
+  
+  delay(100); 
+}
